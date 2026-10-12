@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { FormEvent, useMemo, useState } from "react";
 import { AudioLines, Compass, Star } from "lucide-react";
 import type { SiteSettings } from "@/lib/schemas";
 import { Button } from "@/components/ui/button";
+import { SoftImage } from "@/components/ui/soft-image";
 import { cn } from "@/lib/utils";
 
 type Message = { role: "user" | "ai"; text: string };
@@ -94,7 +94,7 @@ export function SommelierPanel({
         <div className="relative mx-auto size-40 lg:size-44">
           <div className="absolute inset-[-10px] rounded-full border border-brass/50" />
           <div className="absolute inset-[-18px] rounded-full border border-brass/20" />
-          <Image
+          <SoftImage
             src={settings.portrait}
             alt={`${settings.name}, ${settings.title}`}
             fill

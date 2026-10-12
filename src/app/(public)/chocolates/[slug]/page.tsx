@@ -1,9 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Star } from "lucide-react";
 import { ChocolateCard } from "@/components/chocolates/chocolate-card";
 import { BookmarkButton } from "@/components/chocolates/bookmark-button";
+import { SoftImage } from "@/components/ui/soft-image";
 import {
   getChocolateBySlug,
   getChocolates,
@@ -45,7 +45,7 @@ export default async function ChocolateDetailPage({
     <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-border bg-bg-elevated">
-          <Image
+          <SoftImage
             src={chocolate.image}
             alt={`${chocolate.title} by ${chocolate.brand}`}
             fill

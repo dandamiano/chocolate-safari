@@ -15,7 +15,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
+import { SoftImage } from "@/components/ui/soft-image";
 
 export function SiteHeader({ settings }: { settings: SiteSettings }) {
   const pathname = usePathname();
@@ -86,7 +86,7 @@ export function SiteHeader({ settings }: { settings: SiteSettings }) {
             href="/coming-soon/tasting-log"
             className="hidden items-center gap-2.5 rounded-full border border-border bg-bg-elevated py-1 pl-1 pr-3 transition hover:border-brass lg:inline-flex"
           >
-            <Image
+            <SoftImage
               src={settings.tastingLog.avatar}
               alt=""
               width={30}

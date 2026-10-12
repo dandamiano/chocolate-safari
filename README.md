@@ -49,6 +49,8 @@ npx supabase db push
 
 Admin create/edit forms upload primary + gallery images to the public **`chocolates`** Storage bucket via a **server action** (service role after `requireAdmin()`). The resulting public URL is stored in `image` / `gallery`.
 
+`next.config.ts` sets `experimental.serverActions.bodySizeLimit` to **6mb** (uploads allow up to 5MB; the Next default is 1MB and will 413 larger files) and `images.remotePatterns` for `**.supabase.co` Storage public URLs. Product cards use a SoftImage helper that accepts both `/images/...` paths and absolute https URLs.
+
 **Create the bucket in the Dashboard** (SQL Editor cannot insert into `storage.buckets` — you get `must be owner of table buckets`):
 
 1. Dashboard → **Storage** → **New bucket**
