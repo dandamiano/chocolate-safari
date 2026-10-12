@@ -16,8 +16,11 @@ export default async function SommelierPage() {
           AI Chocolate Sommelier
         </h1>
         <p className="mt-3 max-w-2xl text-sm text-text-muted sm:text-base">
-          A rule-based tasting guide for now — pick flavors and start a
-          conversation. Real LLM wiring can plug into the same API later.
+          Pick flavor tags and ask for a tasting path. When{" "}
+          <code className="text-brass">OPENAI_API_KEY</code> (or{" "}
+          <code className="text-brass">AI_API_KEY</code>) is set, replies use a
+          real model with catalogue context — otherwise you get the curated
+          canned guides.
         </p>
       </div>
       <SommelierPanel settings={settings.sommelier} />
