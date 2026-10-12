@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { LoginForm } from "@/components/admin/login-form";
-import { getBrowserSupabaseConfig } from "@/lib/supabase-env";
+import { isSupabaseConfigured } from "@/lib/supabase-env";
 
 export const metadata = {
   title: "Admin login",
@@ -10,7 +10,8 @@ const ERROR_COPY: Record<string, string> = {
   forbidden:
     "You are signed in, but this account is not on ADMIN_EMAILS and does not have role=admin.",
   config:
-    "Supabase Auth is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+    "Supabase Auth is not configured. Set SUPABASE_URL and SUPABASE_ANON_KEY.",
+  auth: "Sign-in link expired or invalid. Try again.",
 };
 
 export default async function AdminLoginPage({
@@ -19,7 +20,7 @@ export default async function AdminLoginPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const params = await searchParams;
-  const configured = Boolean(getBrowserSupabaseConfig());
+  const configured = isSupabaseConfigured();
   const errorMessage = params.error
     ? ERROR_COPY[params.error] ?? null
     : null;
