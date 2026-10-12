@@ -1,8 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import type { Chocolate } from "@/lib/schemas";
 import { formatPrice } from "@/lib/format";
+import { SoftImage } from "@/components/ui/soft-image";
 import { BookmarkButton } from "./bookmark-button";
 
 export function ChocolateCard({ chocolate }: { chocolate: Chocolate }) {
@@ -12,7 +12,7 @@ export function ChocolateCard({ chocolate }: { chocolate: Chocolate }) {
       className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-bg-elevated transition duration-300 hover:-translate-y-1 hover:border-brass/60 hover:shadow-[0_16px_40px_rgba(0,0,0,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-tag">
-        <Image
+        <SoftImage
           src={chocolate.image}
           alt={`${chocolate.title} by ${chocolate.brand}`}
           fill

@@ -148,15 +148,26 @@ export async function uploadChocolateImageAction(
     return { ok: false, message: "Not authorized" };
   }
 
-  const file = formData.get("file");
-  if (!(file instanceof File)) {
+  const entry = formData.get("file");
+  // Server Actions may surface uploads as File or Blob depending on runtime.
+  if (!(entry instanceof Blob) || entry.size <= 0) {
     return { ok: false, message: "Choose an image file." };
   }
+  const blob: Blob = entry;
+  const uploadFile =
+    blob instanceof File
+      ? blob
+      : new File([blob], "upload", {
+          type: blob.type || "application/octet-stream",
+        });
 
   const slugHint = String(formData.get("slugHint") ?? "").trim();
 
   try {
-    const url = await uploadChocolateImageFile(file, slugHint || undefined);
+    const url = await uploadChocolateImageFile(
+      uploadFile,
+      slugHint || undefined
+    );
     return { ok: true, url };
   } catch (error) {
     return {

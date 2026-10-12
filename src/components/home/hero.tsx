@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import {
   Candy,
@@ -9,6 +8,7 @@ import {
   Star,
 } from "lucide-react";
 import type { SiteSettings } from "@/lib/schemas";
+import { SoftImage } from "@/components/ui/soft-image";
 
 const statIcons = {
   candy: Candy,
@@ -20,7 +20,7 @@ const statIcons = {
 export function Hero({ settings }: { settings: SiteSettings }) {
   return (
     <section className="relative isolate -mt-16 min-h-[min(100vh,880px)] overflow-hidden pt-16">
-      <Image
+      <SoftImage
         src={settings.heroImage}
         alt="Dark chocolate squares beside a vintage brass compass"
         fill
