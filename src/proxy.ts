@@ -1,23 +1,20 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isAdminUser } from "@/lib/admin/allowlist";
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase-env";
 
 /**
  * Refresh the auth session and gate /admin/* (except /admin/login).
  * Next.js 16 uses proxy.ts instead of middleware.ts.
+ * Uses server-only SUPABASE_* env vars + cookies (no NEXT_PUBLIC_* required).
  */
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({
     request: { headers: request.headers },
   });
 
-  const url =
-    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ||
-    process.env.SUPABASE_URL?.trim();
-  const anonKey =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ||
-    process.env.SUPABASE_ANON_KEY?.trim();
+  const url = getSupabaseUrl();
+  const anonKey = getSupabaseAnonKey();
 
   if (!url || !anonKey) {
     // Without Supabase, only allow the login page so we can show a config message.

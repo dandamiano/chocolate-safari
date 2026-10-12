@@ -8,7 +8,7 @@ export async function createServerSupabaseClient() {
   const anonKey = getSupabaseAnonKey();
   if (!url || !anonKey) {
     throw new Error(
-      "Missing Supabase URL or anon key. Set SUPABASE_* or NEXT_PUBLIC_SUPABASE_*."
+      "Missing Supabase URL or anon key. Set SUPABASE_URL and SUPABASE_ANON_KEY."
     );
   }
 

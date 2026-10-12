@@ -48,7 +48,7 @@ npx supabase db push
 
 ```bash
 cp .env.example .env.local
-# paste URL, anon, service role, NEXT_PUBLIC_* for Auth, and ADMIN_EMAILS
+# paste SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, ADMIN_EMAILS
 ```
 
 Never commit `.env.local` or the service role key.
@@ -69,14 +69,14 @@ This upserts every `content/chocolates/*.json` row and `content/site-settings/in
 
 | Variable | Purpose | Vercel |
 | --- | --- | --- |
-| `SUPABASE_URL` | Server content reads | Encrypted |
-| `SUPABASE_ANON_KEY` | Server content reads (RLS) | Encrypted |
+| `SUPABASE_URL` | Server content reads + admin Auth | Encrypted |
+| `SUPABASE_ANON_KEY` | Server content reads + admin Auth (RLS) | Encrypted |
 | `SUPABASE_SERVICE_ROLE_KEY` | Admin CMS writes + seed | Encrypted — **never** public |
-| `NEXT_PUBLIC_SUPABASE_URL` | Browser Auth client (`/admin/login`) | Public (required for login) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Browser Auth client | Public (required for login) |
 | `ADMIN_EMAILS` | Comma-separated allowlist | Encrypted |
 
-4. Deploy. Without Supabase env vars, Vercel still builds and serves JSON from `content/` in the repo. `/admin` needs the Auth + service-role vars above.
+Do **not** set `NEXT_PUBLIC_SUPABASE_*` — admin login is server-only (form → server action → session cookies).
+
+4. Deploy. Without Supabase env vars, Vercel still builds and serves JSON from `content/` in the repo. `/admin` needs the vars above.
 
 ### CLI deploy (when logged in)
 
@@ -96,9 +96,9 @@ Use this for live Supabase content. Keystatic can stay for local JSON edits.
 2. **Authentication** → **Users** → **Add user** → create with email/password (or invite).
 3. Optional: set **User Metadata** `{ "role": "admin" }` so the user is allowed even without `ADMIN_EMAILS`.
 4. In `.env.local` / Vercel set:
-   - `ADMIN_EMAILS=you@example.com` (comma-separated for several admins)
-   - `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` (same values as the project URL / anon key)
+   - `SUPABASE_URL` + `SUPABASE_ANON_KEY` (project URL / anon key — server Auth + reads)
    - `SUPABASE_SERVICE_ROLE_KEY` (server writes after the app verifies you are an admin)
+   - `ADMIN_EMAILS=you@example.com` (comma-separated for several admins)
 5. Local: open [http://127.0.0.1:43127/admin/login](http://127.0.0.1:43127/admin/login).  
    Production: `https://YOUR_DOMAIN/admin/login`.
 6. Sign in → `/admin` dashboard → **Chocolates** or **Site settings**.
@@ -108,7 +108,9 @@ Access rules (either is enough):
 - Email appears in `ADMIN_EMAILS`, **or**
 - `user_metadata.role === "admin"` (or `app_metadata.role` for RLS)
 
-Non-admins are redirected to login with a forbidden message. Session cookies are refreshed in `src/proxy.ts` (Next.js 16 proxy).
+Non-admins are redirected to login with a forbidden message. Session cookies are set by server actions and refreshed in `src/proxy.ts` (Next.js 16 proxy) using `SUPABASE_URL` + `SUPABASE_ANON_KEY`.
+
+Password and magic-link sign-in both run as **server actions** (no browser Supabase client). Magic links complete via `/auth/callback`.
 
 Admin writes run in **server actions** with the **service role** after `requireAdmin()` — the service key is never sent to the browser.
 
@@ -157,11 +159,9 @@ See [`.env.example`](.env.example).
 
 | Variable | Required for | Notes |
 | --- | --- | --- |
-| `SUPABASE_URL` | Public reads | Prefer Postgres over JSON when set with anon key |
-| `SUPABASE_ANON_KEY` | Public reads | RLS: select published chocolates + site settings |
+| `SUPABASE_URL` | Public reads + `/admin` Auth | Prefer Postgres over JSON when set with anon key |
+| `SUPABASE_ANON_KEY` | Public reads + `/admin` Auth | RLS: select published chocolates + site settings |
 | `SUPABASE_SERVICE_ROLE_KEY` | Seed + `/admin` writes | Bypasses RLS; never ship to the browser |
-| `NEXT_PUBLIC_SUPABASE_URL` | `/admin/login` | Browser Auth client only |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `/admin/login` | Browser Auth client only |
 | `ADMIN_EMAILS` | `/admin` gate | Comma-separated allowlist |
 
 ## Routes
