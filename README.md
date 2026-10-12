@@ -37,7 +37,7 @@ In the Supabase SQL editor, run in order:
 
 1. [`supabase/migrations/20261012120000_init.sql`](supabase/migrations/20261012120000_init.sql)
 2. [`supabase/migrations/20261012154500_admin_cms.sql`](supabase/migrations/20261012154500_admin_cms.sql) (admin RLS helpers)
-3. [`supabase/migrations/20261012170000_storage_chocolates.sql`](supabase/migrations/20261012170000_storage_chocolates.sql) (public `chocolates` Storage bucket + policies)
+3. Create the Storage bucket in the Dashboard (see below), then run [`supabase/migrations/20261012170000_storage_chocolates.sql`](supabase/migrations/20261012170000_storage_chocolates.sql) (policies only)
 
 Or with the CLI (after `npx supabase login` and `npx supabase link`):
 
@@ -49,10 +49,17 @@ npx supabase db push
 
 Admin create/edit forms upload primary + gallery images to the public **`chocolates`** Storage bucket via a **server action** (service role after `requireAdmin()`). The resulting public URL is stored in `image` / `gallery`.
 
-To apply Storage only (if schema migrations already ran):
+**Create the bucket in the Dashboard** (SQL Editor cannot insert into `storage.buckets` — you get `must be owner of table buckets`):
 
-1. Supabase dashboard → **SQL Editor** → paste and run [`supabase/migrations/20261012170000_storage_chocolates.sql`](supabase/migrations/20261012170000_storage_chocolates.sql), **or**
-2. Dashboard → **Storage** → **New bucket** → name `chocolates`, enable **Public**, then still run the migration policies (or recreate them from that file).
+1. Dashboard → **Storage** → **New bucket**
+2. Name: `chocolates`
+3. Enable **Public**
+4. File size limit: **5 MB**
+5. Allowed MIME types: `image/jpeg`, `image/png`, `image/webp`, `image/gif`, `image/avif`
+
+Then apply the `storage.objects` policies:
+
+1. Supabase dashboard → **SQL Editor** → paste and run [`supabase/migrations/20261012170000_storage_chocolates.sql`](supabase/migrations/20261012170000_storage_chocolates.sql) (policies only; the `insert into storage.buckets` is commented out on purpose)
 
 Writes never need a browser Supabase key — keep using server-only `SUPABASE_*` (no `NEXT_PUBLIC_SUPABASE_*`).
 
