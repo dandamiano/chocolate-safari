@@ -6,10 +6,25 @@ import {
   type Chocolate,
   type SiteSettings,
 } from "./schemas";
+import { getSupabaseAnon, isSupabaseConfigured } from "./supabase";
+import {
+  chocolateFromRow,
+  siteSettingsFromDocument,
+  type ChocolateRow,
+} from "./supabase-mappers";
 
 const reader = createReader(process.cwd(), keystaticConfig);
 
-export async function getSiteSettings(): Promise<SiteSettings> {
+function sortByRecentRank(chocolates: Chocolate[]): Chocolate[] {
+  return [...chocolates].sort((a, b) => {
+    const rankA = a.recentRank ?? Number.MAX_SAFE_INTEGER;
+    const rankB = b.recentRank ?? Number.MAX_SAFE_INTEGER;
+    if (rankA !== rankB) return rankA - rankB;
+    return a.title.localeCompare(b.title);
+  });
+}
+
+async function getSiteSettingsFromJson(): Promise<SiteSettings> {
   const raw = await reader.singletons.siteSettings.read();
   if (!raw) {
     throw new Error("Missing site settings (content/site-settings/index.json)");
@@ -17,25 +32,96 @@ export async function getSiteSettings(): Promise<SiteSettings> {
   return siteSettingsSchema.parse(raw);
 }
 
-export async function getChocolates(): Promise<Chocolate[]> {
+async function getChocolatesFromJson(): Promise<Chocolate[]> {
   const entries = await reader.collections.chocolates.all();
   const chocolates = entries.map(({ slug, entry }) =>
     chocolateSchema.parse({ ...entry, slug: entry.slug || slug })
   );
 
-  return chocolates
-    .filter((item) => item.status === "published")
-    .sort((a, b) => {
-      const rankA = a.recentRank ?? Number.MAX_SAFE_INTEGER;
-      const rankB = b.recentRank ?? Number.MAX_SAFE_INTEGER;
-      if (rankA !== rankB) return rankA - rankB;
-      return a.title.localeCompare(b.title);
-    });
+  return sortByRecentRank(
+    chocolates.filter((item) => item.status === "published")
+  );
+}
+
+async function getSiteSettingsFromSupabase(): Promise<SiteSettings | null> {
+  const supabase = getSupabaseAnon();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("site_settings")
+    .select("document")
+    .eq("id", "default")
+    .maybeSingle();
+
+  if (error) {
+    console.warn("[content] Supabase site_settings failed:", error.message);
+    return null;
+  }
+  if (!data?.document) {
+    console.warn("[content] Supabase site_settings empty; falling back to JSON");
+    return null;
+  }
+
+  return siteSettingsFromDocument(data.document);
+}
+
+async function getChocolatesFromSupabase(): Promise<Chocolate[] | null> {
+  const supabase = getSupabaseAnon();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("chocolates")
+    .select("*")
+    .eq("status", "published");
+
+  if (error) {
+    console.warn("[content] Supabase chocolates failed:", error.message);
+    return null;
+  }
+  if (!data) return null;
+
+  return sortByRecentRank(data.map((row) => chocolateFromRow(row as ChocolateRow)));
+}
+
+export async function getSiteSettings(): Promise<SiteSettings> {
+  if (isSupabaseConfigured()) {
+    const fromDb = await getSiteSettingsFromSupabase();
+    if (fromDb) return fromDb;
+  }
+  return getSiteSettingsFromJson();
+}
+
+export async function getChocolates(): Promise<Chocolate[]> {
+  if (isSupabaseConfigured()) {
+    const fromDb = await getChocolatesFromSupabase();
+    if (fromDb) return fromDb;
+  }
+  return getChocolatesFromJson();
 }
 
 export async function getChocolateBySlug(
   slug: string
 ): Promise<Chocolate | undefined> {
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseAnon();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("chocolates")
+        .select("*")
+        .eq("slug", slug)
+        .eq("status", "published")
+        .maybeSingle();
+
+      if (error) {
+        console.warn("[content] Supabase getBySlug failed:", error.message);
+      } else if (data) {
+        return chocolateFromRow(data as ChocolateRow);
+      } else {
+        return undefined;
+      }
+    }
+  }
+
   const raw = await reader.collections.chocolates.read(slug);
   if (!raw) return undefined;
   const chocolate = chocolateSchema.parse({ ...raw, slug: raw.slug || slug });

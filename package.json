@@ -6,7 +6,8 @@
     "dev": "next dev --port 43127 --hostname 127.0.0.1",
     "build": "next build",
     "start": "next start --port 43127 --hostname 127.0.0.1",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:supabase": "node scripts/seed-supabase.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -15,6 +16,7 @@
     "@radix-ui/react-dialog": "^1.2.0",
     "@radix-ui/react-separator": "^1.1.16",
     "@radix-ui/react-slot": "^1.4.0",
+    "@supabase/supabase-js": "^2.117.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cn": "^0.4.0",
