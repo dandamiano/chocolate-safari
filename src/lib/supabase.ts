@@ -16,6 +16,8 @@ function getSupabaseAnonKey(): string | undefined {
   return (
     process.env.SUPABASE_ANON_KEY?.trim() ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||
+    // New Supabase dashboard label for the anon / publishable key
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ||
     undefined
   );
 }

@@ -6,6 +6,9 @@
  *   SUPABASE_URL (or legacy NEXT_PUBLIC_SUPABASE_URL)
  *   SUPABASE_SERVICE_ROLE_KEY
  *
+ * Anon / publishable key is not required for seed, but if present we accept:
+ *   SUPABASE_ANON_KEY | NEXT_PUBLIC_SUPABASE_ANON_KEY | NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+ *
  * Optional: load from .env.local if present (dotenv not required — we parse simply).
  */
 import { createClient } from "@supabase/supabase-js";
@@ -47,11 +50,17 @@ const url =
   process.env.SUPABASE_URL?.trim() ||
   process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+// Anon key unused by seed; resolve for diagnostics (accepts new dashboard name).
+const anonKey =
+  process.env.SUPABASE_ANON_KEY?.trim() ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim();
 
 if (!url || !serviceKey) {
   console.error(
     "Missing SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) or SUPABASE_SERVICE_ROLE_KEY.\n" +
-      "Copy .env.example → .env.local and paste keys from the Supabase project."
+      "Copy .env.example → .env.local and paste keys from the Supabase project.\n" +
+      `Detected: SUPABASE_URL=${url ? "yes" : "no"}, SUPABASE_SERVICE_ROLE_KEY=${serviceKey ? "yes" : "no"}, anon/publishable=${anonKey ? "yes" : "no"}.`
   );
   process.exit(1);
 }
