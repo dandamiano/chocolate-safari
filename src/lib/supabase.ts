@@ -26,7 +26,7 @@ export function getSupabaseServiceRole(): SupabaseClient {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
   if (!url || !key) {
     throw new Error(
-      "Missing SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) or SUPABASE_SERVICE_ROLE_KEY."
+      "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY."
     );
   }
   return createClient(url, key, {

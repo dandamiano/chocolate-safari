@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { requireAdminForAction } from "@/lib/admin/auth";
 import {
@@ -39,6 +40,90 @@ export type ActionState = {
   message?: string;
   fieldErrors?: Record<string, string[]>;
 };
+
+async function getRequestOrigin(): Promise<string> {
+  const h = await headers();
+  const host = h.get("x-forwarded-host") || h.get("host");
+  if (!host) return "http://127.0.0.1:43127";
+  const proto = h.get("x-forwarded-proto") || "http";
+  return `${proto}://${host}`;
+}
+
+export type AuthActionState = {
+  ok: boolean;
+  message?: string;
+  magicSent?: boolean;
+};
+
+export async function signInWithPasswordAction(
+  _prev: AuthActionState | null,
+  formData: FormData
+): Promise<AuthActionState> {
+  const email = String(formData.get("email") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+
+  if (!email || !password) {
+    return { ok: false, message: "Email and password are required." };
+  }
+
+  try {
+    const supabase = await createServerSupabaseClient();
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) {
+      return { ok: false, message: error.message };
+    }
+  } catch (error) {
+    return {
+      ok: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Sign-in failed. Check SUPABASE_URL and SUPABASE_ANON_KEY.",
+    };
+  }
+
+  redirect("/admin");
+}
+
+export async function signInWithMagicLinkAction(
+  _prev: AuthActionState | null,
+  formData: FormData
+): Promise<AuthActionState> {
+  const email = String(formData.get("magicEmail") ?? "").trim();
+  if (!email) {
+    return { ok: false, message: "Email is required." };
+  }
+
+  try {
+    const origin = await getRequestOrigin();
+    const supabase = await createServerSupabaseClient();
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${origin}/auth/callback?next=/admin`,
+      },
+    });
+    if (error) {
+      return { ok: false, message: error.message };
+    }
+    return {
+      ok: true,
+      magicSent: true,
+      message: "Check your inbox for the link.",
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Magic link failed. Check SUPABASE_URL and SUPABASE_ANON_KEY.",
+    };
+  }
+}
 
 export async function signOutAction(): Promise<void> {
   const supabase = await createServerSupabaseClient();
