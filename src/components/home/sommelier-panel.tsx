@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { FormEvent, useMemo, useState } from "react";
-import { AudioLines, Star } from "lucide-react";
+import { AudioLines, Compass, Star } from "lucide-react";
 import type { SiteSettings } from "@/lib/schemas";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -106,8 +106,11 @@ export function SommelierPanel({
         <div>
           <p className="section-label inline-flex items-center gap-2">
             <Star className="size-3.5 fill-current" />
-            Meet your guide — {settings.title}
+            Meet your guide
           </p>
+          <h2 className="mt-2 font-display text-2xl tracking-tight text-text-on-dark sm:text-[1.75rem]">
+            {settings.title}
+          </h2>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-text-muted sm:text-base">
             {settings.intro}
           </p>
@@ -163,6 +166,9 @@ export function SommelierPanel({
               )}
             >
               {message.text}
+              {message.role === "ai" && !openChat && index === 1 ? (
+                <Compass className="mt-2 size-4 text-brass" strokeWidth={1.5} />
+              ) : null}
             </div>
           ))}
           {openChat ? (

@@ -1,0 +1,19 @@
+{
+  "slug": "meiji-milk",
+  "title": "Meiji Milk",
+  "brand": "Meiji",
+  "shortDescription": "Classic Japanese milk bar — light, sweet, and fast-melting.",
+  "description": "Meiji Milk chocolate is delicate and confectionery-sweet. Explore it alongside KitKat for a crisp-vs-smooth contrast within Japanese convenience classics.",
+  "image": "/images/chocolates/meiji-milk.jpg",
+  "gallery": [],
+  "originCountry": "Japan",
+  "originCode": "JP",
+  "originFlagEmoji": "🇯🇵",
+  "tags": ["Smooth", "Crispy"],
+  "rating": 4.1,
+  "price": 2.4,
+  "currency": "USD",
+  "featured": false,
+  "publishedAt": "2026-09-08T10:00:00.000Z",
+  "status": "published"
+}

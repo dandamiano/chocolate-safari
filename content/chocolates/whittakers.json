@@ -1,0 +1,19 @@
+{
+  "slug": "whittakers",
+  "title": "Creamy Milk",
+  "brand": "Whittaker's",
+  "shortDescription": "Silky New Zealand milk chocolate with rounded sweetness.",
+  "description": "Whittaker's Creamy Milk is approachable and plush — a friendly counterpoint to darker catalogue entries when you want a gentle, dairy-forward session.",
+  "image": "/images/chocolates/whittakers.jpg",
+  "gallery": [],
+  "originCountry": "New Zealand",
+  "originCode": "NZ",
+  "originFlagEmoji": "🇳🇿",
+  "tags": ["Smooth", "Caramel"],
+  "rating": 4.5,
+  "price": 3.1,
+  "currency": "USD",
+  "featured": false,
+  "publishedAt": "2026-09-05T10:00:00.000Z",
+  "status": "published"
+}

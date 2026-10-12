@@ -1,10 +1,10 @@
 # Content (Git-based CMS)
 
-Edit JSON in this folder to update the site without changing React code.
+Edit JSON in this folder to update the site without changing React code, or use the **Keystatic** admin at `/keystatic` while `npm run dev` is running (writes to the same files).
 
 ## Site settings
 
-`site-settings.json` controls:
+`content/site-settings/index.json` (Keystatic path `content/site-settings/` with trailing slash) controls:
 
 - Hero headline / subcopy / image
 - Stats, nav links, value props, upcoming features

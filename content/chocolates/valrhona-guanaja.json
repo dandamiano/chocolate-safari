@@ -1,0 +1,19 @@
+{
+  "slug": "valrhona-guanaja",
+  "title": "Guanaja 70%",
+  "brand": "Valrhona",
+  "shortDescription": "Intense dark chocolate with roasted cocoa and subtle fruit.",
+  "description": "Valrhona Guanaja is a benchmark dark — bitter cocoa, clean melt, and a long finish. Use it when calibrating high-cacao bars against everyday milk chocolate.",
+  "image": "/images/chocolates/valrhona-guanaja.jpg",
+  "gallery": [],
+  "originCountry": "France",
+  "originCode": "FR",
+  "originFlagEmoji": "🇫🇷",
+  "tags": ["Dark", "Fruity"],
+  "rating": 4.8,
+  "price": 6.5,
+  "currency": "USD",
+  "featured": false,
+  "publishedAt": "2026-08-10T10:00:00.000Z",
+  "status": "published"
+}

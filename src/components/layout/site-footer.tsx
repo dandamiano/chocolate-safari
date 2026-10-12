@@ -26,16 +26,9 @@ function SocialGlyph({ icon }: { icon: string }) {
 }
 
 export function SiteFooter({ settings }: { settings: SiteSettings }) {
-  const accountColumn = settings.footerColumns.find(
-    (column) => column.title === "Account"
-  );
-  const otherColumns = settings.footerColumns.filter(
-    (column) => column.title !== "Account"
-  );
-
   return (
     <footer className="border-t border-border bg-bg-base">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-[1.2fr_repeat(3,minmax(0,1fr))_1.1fr] lg:px-8">
         <div className="space-y-4">
           <Logo />
           <p className="max-w-xs text-sm leading-relaxed text-text-muted">
@@ -43,7 +36,7 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
           </p>
         </div>
 
-        {otherColumns.map((column) => (
+        {settings.footerColumns.map((column) => (
           <div key={column.title}>
             <h3 className="mb-4 text-sm font-semibold text-text-on-dark">
               {column.title}
@@ -64,23 +57,6 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
         ))}
 
         <div>
-          <h3 className="mb-4 text-sm font-semibold text-text-on-dark">
-            {accountColumn?.title ?? "Account"}
-          </h3>
-          {accountColumn ? (
-            <ul className="mb-6 space-y-2.5">
-              {accountColumn.links.map((link) => (
-                <li key={link.href + link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-text-muted transition hover:text-brass"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : null}
           <h4 className="mb-3 text-sm font-semibold text-text-on-dark">
             Stay in the loop
           </h4>

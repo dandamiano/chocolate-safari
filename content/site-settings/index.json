@@ -5,7 +5,7 @@
     "taste": "Taste.",
     "remember": "Remember."
   },
-  "heroSubcopy": "Your personal catalogue for tasting notes, rare finds, and the chocolates that stay with you long after the last square.",
+  "heroSubcopy": "A personal and public catalogue of interesting, unusual, and unforgettable chocolates from around the world.",
   "heroImage": "/images/hero.jpg",
   "stats": [
     { "label": "Chocolates", "value": "627", "icon": "candy" },
@@ -25,27 +25,27 @@
     {
       "icon": "clipboard",
       "title": "Document Every Detail",
-      "blurb": "Capture taste notes, origin, cacao %, and price in one place."
+      "blurb": "Taste notes, ingredients, origin, and price in one place."
     },
     {
       "icon": "scales",
       "title": "Compare & Remember",
-      "blurb": "Stack bars side by side so favorites never blur together."
+      "blurb": "See how chocolates stack up side by side."
     },
     {
       "icon": "pot",
       "title": "Discover the Unusual",
-      "blurb": "Hunt obscure origins, limited drops, and regional classics."
+      "blurb": "Find rare and limited chocolates from around the world."
     },
     {
       "icon": "notebook",
       "title": "Personal Tasting Log",
-      "blurb": "Rate, review, and keep a living journal of every bite."
+      "blurb": "Your space to rate, review, and remember every bite."
     },
     {
       "icon": "sparkles",
       "title": "AI-Powered Recommendations",
-      "blurb": "Ask the Sommelier for your next perfect square."
+      "blurb": "Personalized suggestions from the Chocolate Sommelier."
     }
   ],
   "upcomingFeatures": [
@@ -124,7 +124,7 @@
     "name": "Amara",
     "title": "AI Chocolate Sommelier",
     "portrait": "/images/sommelier.jpg",
-    "intro": "Tell me what you crave — fruit, roast, crunch, or silk — and I’ll map a tasting path through the catalogue.",
+    "intro": "Tell me what you enjoy—or what you're curious about. I'll recommend chocolates from our collection that match your taste.",
     "defaultTags": ["Fruity", "Dark", "Nutty", "Caramel", "Crispy", "Smooth"],
     "starterPrompts": [
       "I want something nutty with caramel.",
@@ -132,8 +132,8 @@
       "What should I try from South Africa?"
     ],
     "chatPreview": {
-      "user": "Something nutty with a soft caramel finish?",
-      "ai": "Start with Lunch Bar — peanuts, caramel, and wafer in a nostalgic bite. Then try Mars if you want more nougat softness."
+      "user": "I love dark chocolate with fruity notes and a smooth finish.",
+      "ai": "Excellent choice! I've found 6 chocolates you might love. Shall we begin?"
     },
     "cannedReplies": [
       {

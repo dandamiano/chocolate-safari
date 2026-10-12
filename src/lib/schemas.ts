@@ -16,7 +16,11 @@ export const chocolateSchema = z.object({
   price: z.number(),
   currency: z.string().default("USD"),
   featured: z.boolean().default(false),
-  recentRank: z.number().optional(),
+  // Keystatic optional integers come through as null when unset
+  recentRank: z.preprocess(
+    (value) => (value == null ? undefined : value),
+    z.number().optional()
+  ),
   publishedAt: z.string(),
   status: z.enum(["draft", "published"]).default("published"),
 });

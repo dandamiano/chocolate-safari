@@ -1,0 +1,20 @@
+{
+  "slug": "bar-one",
+  "title": "Bar One",
+  "brand": "Nestlé",
+  "shortDescription": "Caramel-forward milk chocolate with a soft, fudgy chew.",
+  "description": "Bar One is the caramel lover's comfort bar — dense, sweet, and unmistakably nostalgic on South African convenience shelves. Compare its chew against Mars nougat when building a caramel flight.",
+  "image": "/images/chocolates/bar-one.jpg",
+  "gallery": [],
+  "originCountry": "South Africa",
+  "originCode": "ZA",
+  "originFlagEmoji": "🇿🇦",
+  "tags": ["Caramel", "Smooth"],
+  "rating": 4.3,
+  "price": 1.25,
+  "currency": "USD",
+  "featured": true,
+  "recentRank": 3,
+  "publishedAt": "2026-09-20T10:00:00.000Z",
+  "status": "published"
+}

@@ -1,0 +1,19 @@
+{
+  "slug": "green-blacks",
+  "title": "Dark 85%",
+  "brand": "Green & Black's",
+  "shortDescription": "Bold organic dark with dry cocoa and a lean finish.",
+  "description": "Green & Black's 85% pushes into austere territory — minimal sweetness, plenty of roast. Pair with fruit-forward bars to feel how cacao percentage shifts the tasting arc.",
+  "image": "/images/chocolates/green-blacks.jpg",
+  "gallery": [],
+  "originCountry": "United Kingdom",
+  "originCode": "GB",
+  "originFlagEmoji": "🇬🇧",
+  "tags": ["Dark", "Smooth"],
+  "rating": 4.6,
+  "price": 4.2,
+  "currency": "USD",
+  "featured": false,
+  "publishedAt": "2026-08-22T10:00:00.000Z",
+  "status": "published"
+}

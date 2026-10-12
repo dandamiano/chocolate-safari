@@ -28,8 +28,8 @@ export function Hero({ settings }: { settings: SiteSettings }) {
         className="object-cover object-center"
         sizes="100vw"
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-bg-base/92 via-bg-base/72 to-bg-base/35" />
-      <div className="absolute inset-0 bg-bg-base/30" />
+      <div className="absolute inset-0 bg-gradient-to-b from-bg-base/55 via-bg-base/45 to-bg-base/80" />
+      <div className="absolute inset-0 bg-gradient-to-r from-bg-base/85 via-transparent to-bg-base/25" />
 
       <div className="relative mx-auto flex min-h-[min(100vh,880px)] max-w-7xl flex-col justify-center px-4 py-20 sm:px-6 lg:px-8">
         <div className="max-w-2xl">
@@ -68,9 +68,11 @@ export function Hero({ settings }: { settings: SiteSettings }) {
                   <Icon className="mt-0.5 size-4 shrink-0 text-brass" />
                   <div>
                     <dt className="sr-only">{stat.label}</dt>
-                    <dd className="text-sm font-semibold text-text-on-dark">
-                      {stat.value}{" "}
-                      <span className="font-normal text-text-muted">
+                    <dd className="text-sm leading-snug">
+                      <span className="block font-semibold text-text-on-dark">
+                        {stat.value}
+                      </span>
+                      <span className="block text-[12px] font-normal text-text-muted">
                         {stat.label}
                       </span>
                     </dd>

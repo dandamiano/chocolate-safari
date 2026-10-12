@@ -31,7 +31,14 @@ export function SiteHeader({ settings }: { settings: SiteSettings }) {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/40 bg-bg-base/70 backdrop-blur-md">
+    <header
+      className={cn(
+        "sticky top-0 z-50 border-b backdrop-blur-md transition-colors",
+        pathname === "/"
+          ? "border-transparent bg-bg-base/45"
+          : "border-border/40 bg-bg-base/70"
+      )}
+    >
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
         <Logo className="shrink-0" />
 

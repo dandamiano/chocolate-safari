@@ -1,5 +1,5 @@
-import { promises as fs } from "fs";
-import path from "path";
+import { createReader } from "@keystatic/core/reader";
+import keystaticConfig from "../../keystatic.config";
 import {
   chocolateSchema,
   siteSettingsSchema,
@@ -7,26 +7,20 @@ import {
   type SiteSettings,
 } from "./schemas";
 
-const contentRoot = path.join(process.cwd(), "content");
+const reader = createReader(process.cwd(), keystaticConfig);
 
 export async function getSiteSettings(): Promise<SiteSettings> {
-  const raw = await fs.readFile(
-    path.join(contentRoot, "site-settings.json"),
-    "utf8"
-  );
-  return siteSettingsSchema.parse(JSON.parse(raw));
+  const raw = await reader.singletons.siteSettings.read();
+  if (!raw) {
+    throw new Error("Missing site settings (content/site-settings/index.json)");
+  }
+  return siteSettingsSchema.parse(raw);
 }
 
 export async function getChocolates(): Promise<Chocolate[]> {
-  const dir = path.join(contentRoot, "chocolates");
-  const files = await fs.readdir(dir);
-  const chocolates = await Promise.all(
-    files
-      .filter((file) => file.endsWith(".json"))
-      .map(async (file) => {
-        const raw = await fs.readFile(path.join(dir, file), "utf8");
-        return chocolateSchema.parse(JSON.parse(raw));
-      })
+  const entries = await reader.collections.chocolates.all();
+  const chocolates = entries.map(({ slug, entry }) =>
+    chocolateSchema.parse({ ...entry, slug: entry.slug || slug })
   );
 
   return chocolates
@@ -42,14 +36,17 @@ export async function getChocolates(): Promise<Chocolate[]> {
 export async function getChocolateBySlug(
   slug: string
 ): Promise<Chocolate | undefined> {
-  const chocolates = await getChocolates();
-  return chocolates.find((item) => item.slug === slug);
+  const raw = await reader.collections.chocolates.read(slug);
+  if (!raw) return undefined;
+  const chocolate = chocolateSchema.parse({ ...raw, slug: raw.slug || slug });
+  return chocolate.status === "published" ? chocolate : undefined;
 }
 
 export async function getRecentDiscoveries(limit = 5): Promise<Chocolate[]> {
   const chocolates = await getChocolates();
   return chocolates
-    .filter((item) => item.recentRank != null || item.featured)
+    .filter((item) => item.recentRank != null)
+    .sort((a, b) => (a.recentRank ?? 0) - (b.recentRank ?? 0))
     .slice(0, limit);
 }
 
