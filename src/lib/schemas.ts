@@ -6,7 +6,7 @@ export const chocolateSchema = z.object({
   brand: z.string(),
   shortDescription: z.string(),
   description: z.string(),
-  image: z.string(),
+  image: z.string().min(1, "Primary image is required"),
   gallery: z.array(z.string()).default([]),
   originCountry: z.string(),
   originCode: z.string(),

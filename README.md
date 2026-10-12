@@ -37,12 +37,24 @@ In the Supabase SQL editor, run in order:
 
 1. [`supabase/migrations/20261012120000_init.sql`](supabase/migrations/20261012120000_init.sql)
 2. [`supabase/migrations/20261012154500_admin_cms.sql`](supabase/migrations/20261012154500_admin_cms.sql) (admin RLS helpers)
+3. [`supabase/migrations/20261012170000_storage_chocolates.sql`](supabase/migrations/20261012170000_storage_chocolates.sql) (public `chocolates` Storage bucket + policies)
 
 Or with the CLI (after `npx supabase login` and `npx supabase link`):
 
 ```bash
 npx supabase db push
 ```
+
+#### Product image Storage (admin uploads)
+
+Admin create/edit forms upload primary + gallery images to the public **`chocolates`** Storage bucket via a **server action** (service role after `requireAdmin()`). The resulting public URL is stored in `image` / `gallery`.
+
+To apply Storage only (if schema migrations already ran):
+
+1. Supabase dashboard → **SQL Editor** → paste and run [`supabase/migrations/20261012170000_storage_chocolates.sql`](supabase/migrations/20261012170000_storage_chocolates.sql), **or**
+2. Dashboard → **Storage** → **New bucket** → name `chocolates`, enable **Public**, then still run the migration policies (or recreate them from that file).
+
+Writes never need a browser Supabase key — keep using server-only `SUPABASE_*` (no `NEXT_PUBLIC_SUPABASE_*`).
 
 ### 3. Local env
 
@@ -121,9 +133,11 @@ Admin writes run in **server actions** with the **service role** after `requireA
 | `/admin/login` | Email/password or magic link |
 | `/admin` | Dashboard + sign out |
 | `/admin/chocolates` | List all rows (incl. drafts) |
-| `/admin/chocolates/new` | Create |
+| `/admin/chocolates/new` | Create (image upload + form sections) |
 | `/admin/chocolates/[slug]` | Edit / archive (status=draft) / delete |
 | `/admin/settings` | Structured site_settings form |
+
+Product images: drag-drop or file picker uploads to Storage bucket `chocolates`; optional manual path/URL under **Advanced**. Public site `next/image` allows `*.supabase.co` storage URLs via `next.config.ts`.
 
 ## Content editing (Keystatic — local files)
 
