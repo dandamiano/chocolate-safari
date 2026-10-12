@@ -36,18 +36,14 @@ export function LoginForm({
 
   if (!configured) {
     return (
-      <p className="rounded-lg border border-border bg-bg-elevated p-4 text-sm text-text-muted">
-        Set <code className="text-brass">SUPABASE_URL</code>,{" "}
-        <code className="text-brass">SUPABASE_ANON_KEY</code>,{" "}
-        <code className="text-brass">SUPABASE_SERVICE_ROLE_KEY</code>, and{" "}
-        <code className="text-brass">ADMIN_EMAILS</code> to enable admin login.
-        See the README.
+      <p className="rounded-lg border border-border bg-bg-elevated/80 px-4 py-5 text-center text-sm leading-relaxed text-text-muted">
+        Admin isn’t configured yet.
       </p>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <form action={passwordAction} className="space-y-4">
         <Field label="Email">
           <input
@@ -55,6 +51,7 @@ export function LoginForm({
             type="email"
             required
             autoComplete="email"
+            placeholder="you@example.com"
             className={adminInputClass}
           />
         </Field>
@@ -72,40 +69,50 @@ export function LoginForm({
             {error}
           </p>
         ) : null}
-        <Button type="submit" disabled={pending} className="w-full">
+        <Button
+          type="submit"
+          disabled={pending}
+          size="lg"
+          className="h-11 w-full bg-brass text-bg-base hover:bg-brass-hover"
+        >
           {passwordPending ? "Signing in…" : "Sign in"}
         </Button>
       </form>
 
-      <div className="border-t border-border pt-6">
-        <p className="mb-3 text-sm text-text-muted">
-          Or receive a magic link (enable Email provider in Supabase Auth).
-        </p>
-        <form action={magicAction} className="space-y-4">
-          <Field label="Email for magic link">
-            <input
-              name="magicEmail"
-              type="email"
-              required
-              autoComplete="email"
-              className={adminInputClass}
-            />
-          </Field>
-          {magicSent ? (
-            <p className="text-sm text-brass">
-              {magicState?.message ?? "Check your inbox for the link."}
-            </p>
-          ) : null}
-          <Button
-            type="submit"
-            variant="outline"
-            disabled={pending}
-            className="w-full"
-          >
-            {magicPending ? "Sending…" : "Send magic link"}
-          </Button>
-        </form>
+      <div className="relative py-1">
+        <div className="absolute inset-0 flex items-center" aria-hidden>
+          <div className="w-full border-t border-border/60" />
+        </div>
+        <div className="relative flex justify-center">
+          <span className="bg-bg-base px-3 text-xs text-text-muted">or</span>
+        </div>
       </div>
+
+      <form action={magicAction} className="space-y-3">
+        <Field label="Email for magic link">
+          <input
+            name="magicEmail"
+            type="email"
+            required
+            autoComplete="email"
+            placeholder="you@example.com"
+            className={adminInputClass}
+          />
+        </Field>
+        {magicSent ? (
+          <p className="text-center text-sm text-brass">
+            {magicState?.message ?? "Check your inbox for the link."}
+          </p>
+        ) : null}
+        <Button
+          type="submit"
+          variant="ghost"
+          disabled={pending}
+          className="h-10 w-full text-text-muted hover:bg-bg-elevated hover:text-brass"
+        >
+          {magicPending ? "Sending…" : "Email me a magic link"}
+        </Button>
+      </form>
     </div>
   );
 }
