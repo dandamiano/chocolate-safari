@@ -10,6 +10,7 @@ import {
   saveAdminSiteSettings,
   upsertAdminChocolate,
 } from "@/lib/admin/content";
+import { uploadChocolateImageFile } from "@/lib/admin/storage";
 import { chocolateSchema, siteSettingsSchema } from "@/lib/schemas";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -129,6 +130,41 @@ export async function signOutAction(): Promise<void> {
   const supabase = await createServerSupabaseClient();
   await supabase.auth.signOut();
   redirect("/admin/login");
+}
+
+export type UploadImageResult = {
+  ok: boolean;
+  url?: string;
+  message?: string;
+};
+
+/** Upload a product image to Supabase Storage (service role after admin Auth). */
+export async function uploadChocolateImageAction(
+  formData: FormData
+): Promise<UploadImageResult> {
+  try {
+    await requireAdminForAction();
+  } catch {
+    return { ok: false, message: "Not authorized" };
+  }
+
+  const file = formData.get("file");
+  if (!(file instanceof File)) {
+    return { ok: false, message: "Choose an image file." };
+  }
+
+  const slugHint = String(formData.get("slugHint") ?? "").trim();
+
+  try {
+    const url = await uploadChocolateImageFile(file, slugHint || undefined);
+    return { ok: true, url };
+  } catch (error) {
+    return {
+      ok: false,
+      message:
+        error instanceof Error ? error.message : "Upload failed. Try again.",
+    };
+  }
 }
 
 export async function saveChocolateAction(
