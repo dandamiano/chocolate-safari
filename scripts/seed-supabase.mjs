@@ -3,7 +3,7 @@
  * Upsert content/ JSON into Supabase.
  *
  * Requires:
- *   NEXT_PUBLIC_SUPABASE_URL
+ *   SUPABASE_URL (or legacy NEXT_PUBLIC_SUPABASE_URL)
  *   SUPABASE_SERVICE_ROLE_KEY
  *
  * Optional: load from .env.local if present (dotenv not required — we parse simply).
@@ -43,12 +43,14 @@ async function loadEnvFile(filePath) {
 await loadEnvFile(path.join(root, ".env.local"));
 await loadEnvFile(path.join(root, ".env"));
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+const url =
+  process.env.SUPABASE_URL?.trim() ||
+  process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
 
 if (!url || !serviceKey) {
   console.error(
-    "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY.\n" +
+    "Missing SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) or SUPABASE_SERVICE_ROLE_KEY.\n" +
       "Copy .env.example → .env.local and paste keys from the Supabase project."
   );
   process.exit(1);

@@ -1,36 +1,49 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-export function isSupabaseConfigured(): boolean {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
+/**
+ * Canonical server-only env vars. Falls back to NEXT_PUBLIC_* for one release
+ * so existing .env.local files keep working.
+ */
+function getSupabaseUrl(): string | undefined {
+  return (
+    process.env.SUPABASE_URL?.trim() ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ||
+    undefined
   );
 }
 
-let browserOrServerClient: SupabaseClient | null = null;
+function getSupabaseAnonKey(): string | undefined {
+  return (
+    process.env.SUPABASE_ANON_KEY?.trim() ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||
+    undefined
+  );
+}
 
-/** Anon client for app reads. Returns null when env vars are missing. */
+export function isSupabaseConfigured(): boolean {
+  return Boolean(getSupabaseUrl() && getSupabaseAnonKey());
+}
+
+let serverClient: SupabaseClient | null = null;
+
+/** Anon client for server-side reads. Returns null when env vars are missing. */
 export function getSupabaseAnon(): SupabaseClient | null {
   if (!isSupabaseConfigured()) return null;
-  if (browserOrServerClient) return browserOrServerClient;
+  if (serverClient) return serverClient;
 
-  browserOrServerClient = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      auth: { persistSession: false, autoRefreshToken: false },
-    }
-  );
-  return browserOrServerClient;
+  serverClient = createClient(getSupabaseUrl()!, getSupabaseAnonKey()!, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  return serverClient;
 }
 
 /** Service-role client for seed / admin scripts only. Never expose to the browser. */
 export function getSupabaseServiceRole(): SupabaseClient {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const url = getSupabaseUrl();
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
   if (!url || !key) {
     throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY for seed."
+      "Missing SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) or SUPABASE_SERVICE_ROLE_KEY for seed."
     );
   }
   return createClient(url, key, {
