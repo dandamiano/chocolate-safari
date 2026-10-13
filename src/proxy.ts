@@ -4,7 +4,7 @@ import { isAdminUser } from "@/lib/admin/allowlist";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase-env";
 
 /**
- * Refresh the auth session and gate /admin/* (except /admin/login).
+ * Refresh the auth session on matched routes and gate /admin/* (except login).
  * Next.js 16 uses proxy.ts instead of middleware.ts.
  * Uses server-only SUPABASE_* env vars + cookies (no NEXT_PUBLIC_* required).
  */
@@ -15,13 +15,13 @@ export async function proxy(request: NextRequest) {
 
   const url = getSupabaseUrl();
   const anonKey = getSupabaseAnonKey();
+  const path = request.nextUrl.pathname;
+  const isAdminPath = path.startsWith("/admin");
+  const isLogin = path === "/admin/login";
 
   if (!url || !anonKey) {
     // Without Supabase, only allow the login page so we can show a config message.
-    if (
-      request.nextUrl.pathname.startsWith("/admin") &&
-      request.nextUrl.pathname !== "/admin/login"
-    ) {
+    if (isAdminPath && !isLogin) {
       const login = new URL("/admin/login", request.url);
       login.searchParams.set("error", "config");
       return NextResponse.redirect(login);
@@ -52,10 +52,6 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const path = request.nextUrl.pathname;
-  const isAdminPath = path.startsWith("/admin");
-  const isLogin = path === "/admin/login";
-
   if (!isAdminPath) {
     return response;
   }
@@ -79,5 +75,11 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin", "/admin/:path*"],
+  matcher: [
+    /*
+     * Refresh session cookies on app routes; still gate /admin in the handler.
+     * Skip static assets and images.
+     */
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+  ],
 };

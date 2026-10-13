@@ -1,13 +1,14 @@
 # Chocolate Safari
 
-A Next.js tasting catalogue for discovering chocolates — dark cocoa UI, brass accents, AI Sommelier stub, and content from **Supabase (Postgres)** when configured, otherwise JSON/`content/` via **Keystatic**.
+A Next.js tasting catalogue for discovering chocolates — dark cocoa UI, brass accents, AI Sommelier, public accounts / tasting log / reviews, and content from **Supabase (Postgres)** when configured, otherwise JSON/`content/` via **Keystatic**.
 
 ## Stack
 
 - Next.js App Router + TypeScript + Tailwind CSS
 - shadcn/ui primitives
 - **Supabase** Postgres for production content (optional locally)
-- **Production admin CMS** at `/admin` (Supabase Auth + service-role writes)
+- **Public Auth** at `/login` + `/signup` (same cookie session as admin; not an admin gate)
+- **Production admin CMS** at `/admin` (Supabase Auth + service-role writes + `ADMIN_EMAILS`)
 - **Keystatic** at `/keystatic` for local file editing in `/content`
 - Zod-validated content shapes in `src/lib/schemas.ts`
 
@@ -38,6 +39,7 @@ In the Supabase SQL editor, run in order:
 1. [`supabase/migrations/20261012120000_init.sql`](supabase/migrations/20261012120000_init.sql)
 2. [`supabase/migrations/20261012154500_admin_cms.sql`](supabase/migrations/20261012154500_admin_cms.sql) (admin RLS helpers)
 3. Create the Storage bucket in the Dashboard (see below), then run [`supabase/migrations/20261012170000_storage_chocolates.sql`](supabase/migrations/20261012170000_storage_chocolates.sql) (policies only)
+4. [`supabase/migrations/20261012190000_accounts_reviews.sql`](supabase/migrations/20261012190000_accounts_reviews.sql) (bookmarks, tasting notes, community reviews)
 
 Or with the CLI (after `npx supabase login` and `npx supabase link`):
 
@@ -90,12 +92,14 @@ This upserts every `content/chocolates/*.json` row and `content/site-settings/in
 
 | Variable | Purpose | Vercel |
 | --- | --- | --- |
-| `SUPABASE_URL` | Server content reads + admin Auth | Encrypted |
-| `SUPABASE_ANON_KEY` | Server content reads + admin Auth (RLS) | Encrypted |
+| `SUPABASE_URL` | Server content reads + public/admin Auth | Encrypted |
+| `SUPABASE_ANON_KEY` | Server content reads + Auth (RLS) | Encrypted |
 | `SUPABASE_SERVICE_ROLE_KEY` | Admin CMS writes + seed | Encrypted — **never** public |
-| `ADMIN_EMAILS` | Comma-separated allowlist | Encrypted |
+| `ADMIN_EMAILS` | Comma-separated allowlist for `/admin` only | Encrypted |
+| `OPENAI_API_KEY` or `AI_API_KEY` | Optional real Sommelier LLM | Encrypted — **never** public |
+| `AI_BASE_URL` / `AI_MODEL` | Optional OpenAI-compatible base + model | Encrypted |
 
-Do **not** set `NEXT_PUBLIC_SUPABASE_*` — admin login is server-only (form → server action → session cookies).
+Do **not** set `NEXT_PUBLIC_SUPABASE_*` or `NEXT_PUBLIC_*` API keys — Auth and Sommelier keys are server-only (form → server action / route handler → cookies).
 
 4. Deploy. Without Supabase env vars, Vercel still builds and serves JSON from `content/` in the repo. `/admin` needs the vars above.
 
@@ -106,6 +110,33 @@ npx vercel login
 npx vercel link
 npx vercel --prod
 ```
+
+## Public accounts vs admin login
+
+| | Public (`/login`, `/signup`) | Admin (`/admin/login`) |
+| --- | --- | --- |
+| Who | Any catalogue visitor | Allowlisted admins only |
+| Auth | Same Supabase Auth + cookie session (`@supabase/ssr`) | Same session mechanism |
+| Gate | None beyond valid credentials | `ADMIN_EMAILS` or `role: admin` metadata |
+| After sign-in | `/tasting-log` (or `?next=`) | `/admin` |
+| Features | Bookmarks, tasting notes, community reviews | CMS writes via service role |
+
+Do **not** send public users to `/admin/login`. Non-admins who hit `/admin` are redirected with a forbidden message.
+
+### Enable Auth for public users
+
+1. Supabase dashboard → **Authentication** → **Providers** → enable **Email** (password). Optionally disable “Confirm email” for local MVP speed, or keep it and use `/auth/callback`.
+2. Run migration [`20261012190000_accounts_reviews.sql`](supabase/migrations/20261012190000_accounts_reviews.sql) (bookmarks / tasting_notes / reviews + RLS).
+3. Set `SUPABASE_URL` + `SUPABASE_ANON_KEY` (server-only). No `NEXT_PUBLIC_SUPABASE_*`.
+4. Open `/signup` or `/login` on the public site. Header shows signed-in email + real bookmark count and links to `/tasting-log`.
+5. Guests can still bookmark via `localStorage`; signed-in users sync to Supabase.
+
+### AI Sommelier (optional LLM)
+
+1. Set `OPENAI_API_KEY` **or** `AI_API_KEY` (server-only). Optional: `AI_BASE_URL` (default `https://api.openai.com/v1`), `AI_MODEL` (default `gpt-4o-mini`).
+2. Home panel and `/sommelier` already call `POST /api/sommelier` with message + tags.
+3. With a key: OpenAI-compatible chat + top matching catalogue bars as context.
+4. Without a key: existing canned/tag replies — the site keeps working.
 
 ## Production admin CMS (`/admin`)
 
@@ -182,10 +213,13 @@ See [`.env.example`](.env.example).
 
 | Variable | Required for | Notes |
 | --- | --- | --- |
-| `SUPABASE_URL` | Public reads + `/admin` Auth | Prefer Postgres over JSON when set with anon key |
-| `SUPABASE_ANON_KEY` | Public reads + `/admin` Auth | RLS: select published chocolates + site settings |
+| `SUPABASE_URL` | Public reads + Auth | Prefer Postgres over JSON when set with anon key |
+| `SUPABASE_ANON_KEY` | Public reads + Auth | RLS for published content + user-owned rows |
 | `SUPABASE_SERVICE_ROLE_KEY` | Seed + `/admin` writes | Bypasses RLS; never ship to the browser |
-| `ADMIN_EMAILS` | `/admin` gate | Comma-separated allowlist |
+| `ADMIN_EMAILS` | `/admin` gate only | Comma-separated allowlist |
+| `OPENAI_API_KEY` or `AI_API_KEY` | Real Sommelier | Optional; canned fallback without it |
+| `AI_BASE_URL` | Custom OpenAI-compatible host | Optional |
+| `AI_MODEL` | Chat model id | Optional (default `gpt-4o-mini`) |
 
 ## Routes
 
@@ -193,13 +227,17 @@ See [`.env.example`](.env.example).
 | --- | --- |
 | `/` | Landing page |
 | `/explore` | Search / tag / country / sort |
-| `/chocolates/[slug]` | Detail pages |
-| `/sommelier` | Full sommelier chat stub |
-| `/admin` | Production CMS (Supabase) |
+| `/chocolates/[slug]` | Detail + community reviews |
+| `/sommelier` | Sommelier chat (LLM or canned) |
+| `/login`, `/signup` | Public email/password Auth |
+| `/tasting-log` | Synced bookmarks + private notes |
+| `/reviews` | Recent community reviews feed |
+| `/admin` | Production CMS (Supabase) — separate from public login |
 | `/keystatic` | Local file CMS |
-| `/reviews`, `/collections`, `/guides`, `/community` | Coming-soon stubs |
-| `/api/newsletter`, `/api/sommelier` | Stub APIs |
+| `/collections`, `/guides`, `/community` | Coming-soon stubs |
+| `/api/newsletter` | Newsletter stub |
+| `/api/sommelier` | Sommelier API (LLM + canned fallback) |
 
-## Out of scope (MVP)
+## Out of scope (this MVP)
 
-Real LLM recommendations, auth/synced tasting logs, reviews CRUD, rankings, commerce, live Keystatic→Supabase sync.
+Rankings, commerce, review moderation UI, live Keystatic→Supabase sync.

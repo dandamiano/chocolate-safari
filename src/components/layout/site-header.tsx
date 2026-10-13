@@ -16,8 +16,21 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { SoftImage } from "@/components/ui/soft-image";
+import { publicSignOutAction } from "@/lib/auth/actions";
 
-export function SiteHeader({ settings }: { settings: SiteSettings }) {
+export type HeaderAuth = {
+  signedIn: boolean;
+  email: string | null;
+  bookmarkCount: number;
+};
+
+export function SiteHeader({
+  settings,
+  auth,
+}: {
+  settings: SiteSettings;
+  auth: HeaderAuth;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -29,6 +42,10 @@ export function SiteHeader({ settings }: { settings: SiteSettings }) {
     router.push(q ? `/explore?q=${encodeURIComponent(q)}` : "/explore");
     setOpen(false);
   }
+
+  const countLabel = auth.signedIn
+    ? `${auth.bookmarkCount} ${auth.bookmarkCount === 1 ? "chocolate" : "chocolates"}`
+    : "Sign in to sync";
 
   return (
     <header
@@ -76,14 +93,14 @@ export function SiteHeader({ settings }: { settings: SiteSettings }) {
             />
           </form>
           <Link
-            href="/coming-soon/saved"
-            aria-label="Saved chocolates"
+            href="/tasting-log"
+            aria-label="Tasting log"
             className="inline-flex size-9 items-center justify-center rounded-full border border-border text-text-muted transition hover:border-brass hover:text-brass"
           >
             <Bookmark className="size-4" />
           </Link>
           <Link
-            href="/coming-soon/tasting-log"
+            href="/tasting-log"
             className="hidden items-center gap-2.5 rounded-full border border-border bg-bg-elevated py-1 pl-1 pr-3 transition hover:border-brass lg:inline-flex"
           >
             <SoftImage
@@ -94,14 +111,33 @@ export function SiteHeader({ settings }: { settings: SiteSettings }) {
               className="size-[30px] rounded-full object-cover"
             />
             <span className="leading-tight">
-              <span className="block text-[12px] font-medium text-text-on-dark">
-                {settings.tastingLog.title}
+              <span className="block max-w-[9rem] truncate text-[12px] font-medium text-text-on-dark">
+                {auth.signedIn
+                  ? auth.email ?? settings.tastingLog.title
+                  : settings.tastingLog.title}
               </span>
               <span className="block text-[11px] text-text-muted">
-                {settings.tastingLog.countLabel}
+                {countLabel}
               </span>
             </span>
           </Link>
+          {auth.signedIn ? (
+            <form action={publicSignOutAction}>
+              <button
+                type="submit"
+                className="text-[12px] text-text-muted transition hover:text-brass"
+              >
+                Sign out
+              </button>
+            </form>
+          ) : (
+            <Link
+              href="/login"
+              className="text-[12px] font-medium text-brass transition hover:underline"
+            >
+              Sign in
+            </Link>
+          )}
         </div>
 
         <Sheet open={open} onOpenChange={setOpen}>
@@ -141,12 +177,30 @@ export function SiteHeader({ settings }: { settings: SiteSettings }) {
                 </Link>
               ))}
               <Link
-                href="/coming-soon/tasting-log"
+                href="/tasting-log"
                 onClick={() => setOpen(false)}
                 className="text-sm text-text-muted transition hover:text-brass"
               >
-                My Tasting Log
+                My Tasting Log ({countLabel})
               </Link>
+              {auth.signedIn ? (
+                <form action={publicSignOutAction}>
+                  <button
+                    type="submit"
+                    className="text-sm text-text-muted transition hover:text-brass"
+                  >
+                    Sign out
+                  </button>
+                </form>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setOpen(false)}
+                  className="text-sm text-brass transition hover:underline"
+                >
+                  Sign in
+                </Link>
+              )}
             </div>
           </SheetContent>
         </Sheet>

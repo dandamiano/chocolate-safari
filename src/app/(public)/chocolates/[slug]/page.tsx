@@ -3,13 +3,20 @@ import { notFound } from "next/navigation";
 import { Star } from "lucide-react";
 import { ChocolateCard } from "@/components/chocolates/chocolate-card";
 import { BookmarkButton } from "@/components/chocolates/bookmark-button";
+import { ReviewForm } from "@/components/reviews/review-form";
+import { ReviewList } from "@/components/reviews/review-list";
 import { SoftImage } from "@/components/ui/soft-image";
+import { getPublicSession } from "@/lib/auth/session";
 import {
   getChocolateBySlug,
   getChocolates,
   getRelatedChocolates,
 } from "@/lib/content";
 import { formatPrice } from "@/lib/format";
+import {
+  getMyReviewForChocolate,
+  getReviewsForChocolate,
+} from "@/lib/reviews/queries";
 
 export async function generateStaticParams() {
   const chocolates = await getChocolates();
@@ -39,7 +46,15 @@ export default async function ChocolateDetailPage({
   const chocolate = await getChocolateBySlug(slug);
   if (!chocolate) notFound();
 
-  const related = await getRelatedChocolates(chocolate, 4);
+  const [related, reviewData, session] = await Promise.all([
+    getRelatedChocolates(chocolate, 4),
+    getReviewsForChocolate(slug),
+    getPublicSession(),
+  ]);
+
+  const myReview = session.user
+    ? await getMyReviewForChocolate(slug, session.user.id)
+    : null;
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -73,8 +88,19 @@ export default async function ChocolateDetailPage({
           <div className="mt-6 flex flex-wrap items-center gap-4 text-sm">
             <span className="inline-flex items-center gap-1.5 text-brass">
               <Star className="size-4 fill-current" />
-              {chocolate.rating.toFixed(1)}
+              Editorial {chocolate.rating.toFixed(1)}
             </span>
+            {reviewData.communityAvg != null ? (
+              <span className="inline-flex items-center gap-1.5 text-text-muted">
+                Community {reviewData.communityAvg.toFixed(1)}
+                <span className="text-xs">
+                  ({reviewData.count}{" "}
+                  {reviewData.count === 1 ? "review" : "reviews"})
+                </span>
+              </span>
+            ) : (
+              <span className="text-xs text-text-muted">No community reviews yet</span>
+            )}
             <span className="font-semibold text-text-on-dark">
               {formatPrice(chocolate.price, chocolate.currency)}
             </span>
@@ -106,6 +132,36 @@ export default async function ChocolateDetailPage({
           </Link>
         </div>
       </div>
+
+      <section className="mt-16 grid gap-8 lg:grid-cols-[1fr_0.9fr]">
+        <div>
+          <h2 className="section-label">Community reviews</h2>
+          <div className="mt-5">
+            <ReviewList
+              reviews={reviewData.reviews}
+              currentUserId={session.user?.id}
+            />
+          </div>
+        </div>
+        <div>
+          {session.user ? (
+            <ReviewForm
+              slug={slug}
+              initialRating={myReview?.rating ?? 5}
+              initialBody={myReview?.body ?? ""}
+            />
+          ) : (
+            <div className="rounded-2xl border border-border bg-bg-elevated/50 px-5 py-6 text-sm text-text-muted">
+              <p>
+                <Link href={`/login?next=/chocolates/${slug}`} className="text-brass hover:underline">
+                  Sign in
+                </Link>{" "}
+                to leave a community review. Editorial ratings stay separate.
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
 
       {related.length > 0 ? (
         <section className="mt-16">
